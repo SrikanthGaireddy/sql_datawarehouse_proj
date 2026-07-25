@@ -1,3 +1,5 @@
+--fix crm_cust_info
+
 insert into silver.crm_cust_info(
 cst_id      ,
 cst_key     ,
