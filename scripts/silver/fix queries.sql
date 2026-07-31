@@ -31,8 +31,9 @@ order by cst_create_date Desc) as flag_last
 from bronze.crm_cust_info) as t
 where flag_last = 1 and cst_id is not null;
 
-------------------------------------------------
 
+
+------------------------------------------------------------------------------------
 INSERT INTO silver.crm_prd_info(
 cat_id,
 prd_key,
@@ -64,7 +65,8 @@ FROM bronze.crm_prd_info;
 select * from silver.crm_prd_info;
 
 
---------------------------------------------
+
+------------------------------------------------------------------------------------------
 INSERT INTO silver.crm_sales_details(
 sls_ord_num,
 sls_prd_key,
@@ -106,5 +108,74 @@ END AS sls_price
 from bronze.crm_sales_details;
 
 select * from silver.crm_sales_details;
+===================================================================================================================================================
 
+
+
+
+-- insert the data into erp_cust_az12
+---------------------------------------------
+INSERT INTO silver.erp_cust_az12(
+cid,
+bdate,
+gen
+)
+SELECT
+CASE
+ WHEN cid like 'NAS%' THEN SUBSTRING(cid,4,len(cid))
+ else cid
+ end as cid,
+Case
+  when bdate > getdate() or bdate < '1926-01-01' then null
+  else bdate
+end as bdate,
+case
+ when upper(trim(gen)) in ('F','FEMALE') then 'Female'
+ when upper(trim(gen)) in ('M','MALE') then 'Male'
+ else 'n/a'
+end as gen
+from bronze.erp_cust_az12
+----------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+-- fix erp_loc_a101
+-------------------------------
+INSERT into silver.erp_loc_a101(
+cid,
+cntry)
+SELECT 
+REPLACE(cid,'-','') as cid,
+CASE
+ when trim(cntry) = 'DE' then 'Germany'
+ when trim(cntry) in ('US','USA') THEN 'United State'
+ when trim(cntry) = '' or cntry is NULL THEN 'n/a'
+ else trim(cntry)
+end as cntry
+from bronze.erp_loc_a101;
+---------------------------------------------------------------------------
+
+
+
+
+
+
+- fix erp_px_cat_g1v2
+---------------------------------
+INSERT INTO silver.erp_px_cat_g1v2(
+id,
+cat,
+subcat,
+maintenance)
+SELECT
+id,
+cat,
+subcat,
+maintenance
+from bronze.erp_px_cat_g1v2;
+
+SELECT * FROM silver.erp_px_cat_g1v2;
 
